@@ -60,7 +60,7 @@ function RootLayoutNav() {
           <Stack.Screen name="modal" options={{ presentation: "modal" }} />
           <Stack.Screen
             name="holiday/[id]"
-            options={{ title: "Bank Holiday" }}
+            options={{ title: "Bank Holiday", headerBackTitle: "Back" }}
           />
         </Stack>
       </ThemeProvider>
