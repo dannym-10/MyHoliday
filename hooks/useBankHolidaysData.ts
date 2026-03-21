@@ -1,10 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { addMonths, isAfter, isBefore, parseISO, startOfDay } from "date-fns";
-
-// Bank Holiday List Screen — Display the next 5 UK bank holidays occurring within the next 6 months,
-// The feed contains separate lists for England and Wales, Scotland, and Northern Ireland. Merge all three
-// lists and deduplicate by date and title, then display the next 5 unique holidays within the 6-month window.
+import { generateBankHolidayID } from "../utils/generateBankHolidayID";
 
 interface BankHoliday {
   title: string;
@@ -36,6 +33,7 @@ export const useBankHolidaysData = () => {
       ].map((item) => ({
         title: item.title,
         date: item.date,
+        id: generateBankHolidayID(item.title, item.date),
       }));
 
       const uniqueData = Array.from(

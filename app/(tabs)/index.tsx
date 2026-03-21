@@ -7,8 +7,9 @@ import {
   RefreshControl,
 } from "react-native";
 import { Text, View } from "@/components/Themed";
-import { useBankHolidaysData } from "../hooks/useBankHolidaysData";
+import { useBankHolidaysData } from "../../hooks/useBankHolidaysData";
 import { format } from "date-fns";
+import { router } from "expo-router";
 
 export default function TabOneScreen() {
   const { data, isLoading, isError, refetch, isFetching } =
@@ -39,42 +40,50 @@ export default function TabOneScreen() {
     );
   }
 
-  const renderItem = (item: { title: string; date: string }) => {
+  const renderItem = (item: { title: string; date: string; id: string }) => {
     const formattedDay = format(item.date, "dd");
     const formattedMonth = format(item.date, "MMMM");
 
-    return (
-      <View
-        style={{
-          display: "flex",
-          flexDirection: "row",
+    const handlePress = () => {
+      router.push({
+        pathname: "/holiday/[id]",
+        params: { id: item.id, title: item.title, date: item.date },
+      });
+    };
 
-          paddingVertical: 10,
-          paddingHorizontal: 30,
-          alignItems: "center",
-        }}
-      >
-        <View style={{ paddingRight: 20 }}>
-          <Text style={{ fontSize: 30, fontWeight: "700" }}>
-            {formattedDay}
-          </Text>
-          <Text style={{ fontSize: 18, fontWeight: "400" }}>
-            {formattedMonth}
-          </Text>
+    return (
+      <Pressable onPress={handlePress}>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            paddingVertical: 10,
+            paddingHorizontal: 30,
+            alignItems: "center",
+          }}
+        >
+          <View style={{ paddingRight: 20 }}>
+            <Text style={{ fontSize: 30, fontWeight: "700" }}>
+              {formattedDay}
+            </Text>
+            <Text style={{ fontSize: 18, fontWeight: "400" }}>
+              {formattedMonth}
+            </Text>
+          </View>
+          <Text style={{ fontSize: 18, fontWeight: "400" }}>{item.title}</Text>
         </View>
-        <Text style={{ fontSize: 18, fontWeight: "400" }}>{item.title}</Text>
-      </View>
+      </Pressable>
     );
   };
 
   return (
     <View style={{ flex: 1, paddingVertical: 10 }}>
       <Text style={{ fontSize: 24, textAlign: "center", fontWeight: "500" }}>
-        GB Bank Holidays
+        Bank Holidays
       </Text>
       <FlatList
         data={data}
-        keyExtractor={(item) => item.date + item.title}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => renderItem(item)}
         contentContainerStyle={{
           flexGrow: 1,
