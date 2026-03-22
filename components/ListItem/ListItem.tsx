@@ -1,4 +1,4 @@
-import React, { useRef, RefObject } from "react";
+import React, { useRef } from "react";
 import { StyleSheet, Pressable, Text, View } from "react-native";
 import { differenceInDays, format } from "date-fns";
 import { router } from "expo-router";

@@ -1,12 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  Modal,
-} from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { addMonths, differenceInDays, format, formatDate } from "date-fns";
 import { useAddToCalendar } from "@/hooks/useAddToCalendar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,7 +12,8 @@ import Animated, {
   FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
-import { BlurView } from "expo-blur";
+import { useEditContext } from "@/context/EditContext";
+import { ConfirmationModal } from "@/components/ConfirmationModal";
 
 export default function HolidayDetailScreen() {
   const { id, title, date } = useLocalSearchParams<{
@@ -27,20 +21,38 @@ export default function HolidayDetailScreen() {
     title: string;
     date: string;
   }>();
-  const [currentTitle, setCurrentTitle] = useState<string>(title);
-  const [currentDate, setCurrentDate] = useState<string>(date);
+  const { top } = useSafeAreaInsets();
+  const { addToCalendar } = useAddToCalendar();
+  const { editedItems, updateItem } = useEditContext();
+  const currentItem = editedItems[id] || { title, date };
+  const [currentTitle, setCurrentTitle] = useState<string>(currentItem.title);
+  const [stagedTitle, setStagedTitle] = useState<string>(currentItem.title);
+  const [currentDate, setCurrentDate] = useState<string>(currentItem.date);
+  const [stagedDate, setStagedDate] = useState<string>(currentItem.date);
   const [isDatePickerVisible, setIsDatePickerVisible] =
     useState<boolean>(false);
   const [isConfirmationModalVisible, setIsConfirmationModalVisible] =
     useState<boolean>(false);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
-  const { addToCalendar } = useAddToCalendar();
-  const daysUntil = differenceInDays(date, new Date());
-  const { top } = useSafeAreaInsets();
+
+  const daysUntil = differenceInDays(new Date(currentDate), new Date());
 
   const handleDateConfirm = (selectedDate: Date) => {
-    setCurrentDate(format(selectedDate, "dd/MM/yyyy"));
+    setStagedDate(format(selectedDate, "yyyy-MM-dd"));
     setIsDatePickerVisible(false);
+  };
+
+  const handleUpdateItem = () => {
+    setCurrentTitle(stagedTitle);
+    setCurrentDate(stagedDate);
+
+    updateItem(id, {
+      title: stagedTitle,
+      date: stagedDate,
+    });
+
+    setIsEditMode(false);
+    setIsConfirmationModalVisible(false);
   };
 
   return (
@@ -56,7 +68,13 @@ export default function HolidayDetailScreen() {
           <Text style={styles.greenText}>Back</Text>
         </Pressable>
         {isEditMode ? (
-          <Pressable onPress={() => setIsEditMode(false)}>
+          <Pressable
+            onPress={() => {
+              setIsEditMode(false);
+              setStagedTitle(currentTitle);
+              setStagedDate(currentDate);
+            }}
+          >
             <Text style={styles.cancelButton}>Cancel</Text>
           </Pressable>
         ) : (
@@ -71,8 +89,8 @@ export default function HolidayDetailScreen() {
             <Text style={styles.editLabel}>Title</Text>
             <TextInput
               style={styles.editInput}
-              value={currentTitle}
-              onChangeText={setCurrentTitle}
+              value={stagedTitle}
+              onChangeText={setStagedTitle}
               placeholder="Holiday title"
               placeholderTextColor="rgba(255,255,255,0.4)"
             />
@@ -81,7 +99,7 @@ export default function HolidayDetailScreen() {
               <View pointerEvents="none">
                 <TextInput
                   style={styles.editInput}
-                  value={format(currentDate, "dd/MM/yyyy")}
+                  value={format(stagedDate, "dd/MM/yyyy")}
                   editable={false}
                 />
               </View>
@@ -90,9 +108,9 @@ export default function HolidayDetailScreen() {
         ) : (
           <Animated.View key="editing" entering={FadeIn} exiting={FadeOut}>
             <Text style={styles.bankHolidayText}>BANK HOLIDAY</Text>
-            <Text style={styles.titleText}>{title}</Text>
+            <Text style={styles.titleText}>{currentTitle}</Text>
             <Text style={styles.dateText}>
-              {formatDate(date, "EEEE d MMMM yyyy")}
+              {formatDate(currentDate, "EEEE d MMMM yyyy")}
             </Text>
           </Animated.View>
         )}
@@ -108,7 +126,7 @@ export default function HolidayDetailScreen() {
           <View style={styles.spacer} />
           <View>
             <Text style={styles.middleHeading}>Falls on</Text>
-            <Text style={styles.middleText}>{format(date, "EEEE")}</Text>
+            <Text style={styles.middleText}>{format(currentDate, "EEEE")}</Text>
           </View>
         </View>
         <Pressable
@@ -116,7 +134,7 @@ export default function HolidayDetailScreen() {
           onPress={() =>
             isEditMode
               ? setIsConfirmationModalVisible(true)
-              : addToCalendar(title, date)
+              : addToCalendar(currentTitle, currentDate)
           }
         >
           <Text style={styles.buttonText}>
@@ -124,94 +142,15 @@ export default function HolidayDetailScreen() {
           </Text>
         </Pressable>
       </Animated.View>
-      <Modal
-        visible={isConfirmationModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setIsConfirmationModalVisible(false)}
-      >
-        <BlurView intensity={20} tint="extraLight" style={styles.modalBlur}>
-          <Pressable
-            style={styles.modalBackdrop}
-            onPress={() => setIsConfirmationModalVisible(false)}
-          >
-            <Pressable>
-              <View style={styles.innerModal}>
-                <View
-                  style={{
-                    backgroundColor: "#0F6E56",
-                    width: "100%",
-                    borderTopLeftRadius: 14,
-                    borderTopRightRadius: 14,
-                    padding: 20,
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.buttonText,
-                      { textAlign: "auto", paddingBottom: 8 },
-                    ]}
-                  >
-                    Save Changes?
-                  </Text>
-                  <Text
-                    style={{
-                      color: "#9FE1CB",
-                      fontSize: 16,
-                      fontWeight: "500",
-                    }}
-                  >
-                    You're about to update this bank holiday.
-                  </Text>
-                  <Text
-                    style={{
-                      color: "#9FE1CB",
-                      fontSize: 16,
-                      fontWeight: "500",
-                    }}
-                  >
-                    This can be updated at any time
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    paddingHorizontal: 20,
-                    paddingBottom: 20,
-                  }}
-                >
-                  <Pressable
-                    onPress={() => setIsConfirmationModalVisible(false)}
-                    style={[
-                      styles.buttonWrapper,
-                      {
-                        backgroundColor: "white",
-                        borderWidth: 1,
-                        borderColor: "#D3D1C7",
-                        flex: 1,
-                        marginRight: 4,
-                      },
-                    ]}
-                  >
-                    <Text style={[styles.buttonText, { color: "#888780" }]}>
-                      Go Back
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    style={[styles.buttonWrapper, { flex: 1, marginLeft: 4 }]}
-                  >
-                    <Text style={styles.buttonText}>Confirm</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </Pressable>
-          </Pressable>
-        </BlurView>
-      </Modal>
+      <ConfirmationModal
+        isVisible={isConfirmationModalVisible}
+        onClose={() => setIsConfirmationModalVisible(false)}
+        onConfirm={handleUpdateItem}
+      />
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"
-        date={new Date(currentDate)}
+        date={new Date(stagedDate)}
         onConfirm={handleDateConfirm}
         onCancel={() => setIsDatePickerVisible(false)}
         minimumDate={new Date()}
@@ -320,22 +259,5 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#FFF",
     fontWeight: "600",
-  },
-  modalBlur: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(29, 158, 117, 0.3)",
-  },
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  innerModal: {
-    backgroundColor: "white",
-    borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
   },
 });
