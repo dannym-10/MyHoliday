@@ -2,6 +2,9 @@ import { useLocalSearchParams } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 import { differenceInDays, format, formatDate } from "date-fns";
 import { useAddToCalendar } from "@/hooks/useAddToCalendar";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ChevronRight } from "@/assets/SVGs/ChevronRight";
+import { router } from "expo-router";
 
 export default function HolidayDetailScreen() {
   const { id, title, date } = useLocalSearchParams<{
@@ -11,14 +14,40 @@ export default function HolidayDetailScreen() {
   }>();
   const { addToCalendar } = useAddToCalendar();
   const daysUntil = differenceInDays(date, new Date());
+  const { top } = useSafeAreaInsets();
 
   return (
     <View
       style={{
         paddingHorizontal: 24,
-        paddingTop: 20,
+        paddingTop: top,
       }}
     >
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingBottom: 30,
+          paddingTop: 10,
+        }}
+      >
+        <Pressable
+          style={{ flexDirection: "row", alignItems: "center" }}
+          onPress={() => router.back()}
+        >
+          <ChevronRight
+            color="#1D9E75"
+            height={20}
+            width={20}
+            style={{ transform: [{ rotate: "180deg" }] }}
+          />
+          <Text style={{ color: "#1D9E75", fontSize: 18 }}>Back</Text>
+        </Pressable>
+        <Pressable>
+          <Text style={{ color: "#1D9E75", fontSize: 18 }}>Edit details</Text>
+        </Pressable>
+      </View>
       <View
         style={{
           paddingHorizontal: 28,

@@ -63,7 +63,11 @@ function RootLayoutNav() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen
               name="holiday/[id]"
-              options={{ title: "Bank Holiday", headerBackTitle: "Back" }}
+              options={{
+                title: "Bank Holiday",
+                headerBackTitle: "Back",
+                headerShown: false,
+              }}
             />
           </Stack>
         </ThemeProvider>

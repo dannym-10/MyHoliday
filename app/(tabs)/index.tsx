@@ -12,6 +12,10 @@ import { useBankHolidaysData } from "../../hooks/useBankHolidaysData";
 import { ListItem } from "@/components/ListItem/ListItem";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SwipeableMethods } from "react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable";
+import Animated, {
+  FadeInLeft,
+  LinearTransition,
+} from "react-native-reanimated";
 
 export default function TabOneScreen() {
   const { top } = useSafeAreaInsets();
@@ -65,13 +69,19 @@ export default function TabOneScreen() {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ListItem
-            date={item.date}
-            title={item.title}
-            id={item.id}
-            currentlyOpenSwipeableRef={currentlyOpenSwipeableRef}
-          />
+        renderItem={({ item, index }) => (
+          <Animated.View
+            entering={FadeInLeft.delay(index * 100).duration(300)}
+            layout={LinearTransition}
+          >
+            <ListItem
+              date={item.date}
+              title={item.title}
+              id={item.id}
+              key={item.id}
+              currentlyOpenSwipeableRef={currentlyOpenSwipeableRef}
+            />
+          </Animated.View>
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
