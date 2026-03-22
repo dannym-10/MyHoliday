@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import {
   StyleSheet,
   ActivityIndicator,
@@ -20,6 +20,7 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 import { useEditContext } from "@/context/EditContext";
+import { useFocusEffect } from "expo-router";
 
 export default function TabOneScreen() {
   const { top } = useSafeAreaInsets();
@@ -34,6 +35,13 @@ export default function TabOneScreen() {
     })) || [];
 
   const currentlyOpenSwipeableRef = useRef<SwipeableMethods | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      currentlyOpenSwipeableRef.current?.close();
+      currentlyOpenSwipeableRef.current = null;
+    }, []),
+  );
 
   if (isLoading) {
     return (

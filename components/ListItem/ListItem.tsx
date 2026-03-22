@@ -27,17 +27,22 @@ export const ListItem: React.FC<ListItemProps> = ({
 
   const swipeableRef = useRef<SwipeableMethods>(null);
 
-  const handlePress = () => {
+  const handlePress = (isEditMode: boolean) => {
     router.push({
       pathname: "/holiday/[id]",
-      params: { id: id, title: title, date: date },
+      params: {
+        id: id,
+        title: title,
+        date: date,
+        isInEditMode: String(isEditMode),
+      },
     });
   };
 
   const renderRightAction = () => {
     return (
       <Pressable
-        onPress={() => console.log("Delete")}
+        onPress={() => handlePress(true)}
         style={{
           backgroundColor: "red",
           alignItems: "center",
@@ -65,7 +70,7 @@ export const ListItem: React.FC<ListItemProps> = ({
         currentlyOpenSwipeableRef.current = swipeableRef.current;
       }}
     >
-      <Pressable onPress={handlePress}>
+      <Pressable onPress={() => handlePress(false)}>
         <View style={styles.container}>
           <View style={styles.leftSide}>
             <View style={styles.dateWrapper}>

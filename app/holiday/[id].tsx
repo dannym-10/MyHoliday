@@ -15,11 +15,14 @@ import Animated, {
 import { useEditContext } from "@/context/EditContext";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 
+const HITSLOP = { top: 14, bottom: 14, left: 14, right: 14 };
+
 export default function HolidayDetailScreen() {
-  const { id, title, date } = useLocalSearchParams<{
+  const { id, title, date, isInEditMode } = useLocalSearchParams<{
     id: string;
     title: string;
     date: string;
+    isInEditMode: string;
   }>();
   const { top } = useSafeAreaInsets();
   const { addToCalendar } = useAddToCalendar();
@@ -33,7 +36,9 @@ export default function HolidayDetailScreen() {
     useState<boolean>(false);
   const [isConfirmationModalVisible, setIsConfirmationModalVisible] =
     useState<boolean>(false);
-  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [isEditMode, setIsEditMode] = useState<boolean>(
+    isInEditMode === "true",
+  );
   const [isTitleError, setIsTitleError] = useState<boolean>(false);
 
   const daysUntil = differenceInDays(new Date(currentDate), new Date());
@@ -66,7 +71,11 @@ export default function HolidayDetailScreen() {
   return (
     <View style={[styles.screenWrapper, { paddingTop: top }]}>
       <View style={styles.headingContainer}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => router.back()}
+          hitSlop={HITSLOP}
+        >
           <ChevronRight
             color="#1D9E75"
             height={20}
@@ -77,6 +86,7 @@ export default function HolidayDetailScreen() {
         </Pressable>
         {isEditMode ? (
           <Pressable
+            hitSlop={HITSLOP}
             onPress={() => {
               setIsEditMode(false);
               setStagedTitle(currentTitle);
