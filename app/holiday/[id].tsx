@@ -1,16 +1,25 @@
 import { useLocalSearchParams } from "expo-router";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { differenceInDays, format, formatDate } from "date-fns";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  Modal,
+} from "react-native";
+import { addMonths, differenceInDays, format, formatDate } from "date-fns";
 import { useAddToCalendar } from "@/hooks/useAddToCalendar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronRight } from "@/assets/SVGs/ChevronRight";
 import { router } from "expo-router";
 import { useState } from "react";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Animated, {
   FadeIn,
   FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
+import { BlurView } from "expo-blur";
 
 export default function HolidayDetailScreen() {
   const { id, title, date } = useLocalSearchParams<{
@@ -20,10 +29,19 @@ export default function HolidayDetailScreen() {
   }>();
   const [currentTitle, setCurrentTitle] = useState<string>(title);
   const [currentDate, setCurrentDate] = useState<string>(date);
+  const [isDatePickerVisible, setIsDatePickerVisible] =
+    useState<boolean>(false);
+  const [isConfirmationModalVisible, setIsConfirmationModalVisible] =
+    useState<boolean>(false);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const { addToCalendar } = useAddToCalendar();
   const daysUntil = differenceInDays(date, new Date());
   const { top } = useSafeAreaInsets();
+
+  const handleDateConfirm = (selectedDate: Date) => {
+    setCurrentDate(format(selectedDate, "dd/MM/yyyy"));
+    setIsDatePickerVisible(false);
+  };
 
   return (
     <View style={[styles.screenWrapper, { paddingTop: top }]}>
@@ -59,13 +77,15 @@ export default function HolidayDetailScreen() {
               placeholderTextColor="rgba(255,255,255,0.4)"
             />
             <Text style={styles.editLabel}>Date</Text>
-            <TextInput
-              style={styles.editInput}
-              value={currentDate}
-              onChangeText={setCurrentDate}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor="rgba(255,255,255,0.4)"
-            />
+            <Pressable onPress={() => setIsDatePickerVisible(true)}>
+              <View pointerEvents="none">
+                <TextInput
+                  style={styles.editInput}
+                  value={format(currentDate, "dd/MM/yyyy")}
+                  editable={false}
+                />
+              </View>
+            </Pressable>
           </Animated.View>
         ) : (
           <Animated.View key="editing" entering={FadeIn} exiting={FadeOut}>
@@ -95,7 +115,7 @@ export default function HolidayDetailScreen() {
           style={styles.buttonWrapper}
           onPress={() =>
             isEditMode
-              ? console.log("saving changes")
+              ? setIsConfirmationModalVisible(true)
               : addToCalendar(title, date)
           }
         >
@@ -104,6 +124,99 @@ export default function HolidayDetailScreen() {
           </Text>
         </Pressable>
       </Animated.View>
+      <Modal
+        visible={isConfirmationModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsConfirmationModalVisible(false)}
+      >
+        <BlurView intensity={20} tint="extraLight" style={styles.modalBlur}>
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setIsConfirmationModalVisible(false)}
+          >
+            <Pressable>
+              <View style={styles.innerModal}>
+                <View
+                  style={{
+                    backgroundColor: "#0F6E56",
+                    width: "100%",
+                    borderTopLeftRadius: 14,
+                    borderTopRightRadius: 14,
+                    padding: 20,
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      { textAlign: "auto", paddingBottom: 8 },
+                    ]}
+                  >
+                    Save Changes?
+                  </Text>
+                  <Text
+                    style={{
+                      color: "#9FE1CB",
+                      fontSize: 16,
+                      fontWeight: "500",
+                    }}
+                  >
+                    You're about to update this bank holiday.
+                  </Text>
+                  <Text
+                    style={{
+                      color: "#9FE1CB",
+                      fontSize: 16,
+                      fontWeight: "500",
+                    }}
+                  >
+                    This can be updated at any time
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    paddingHorizontal: 20,
+                    paddingBottom: 20,
+                  }}
+                >
+                  <Pressable
+                    onPress={() => setIsConfirmationModalVisible(false)}
+                    style={[
+                      styles.buttonWrapper,
+                      {
+                        backgroundColor: "white",
+                        borderWidth: 1,
+                        borderColor: "#D3D1C7",
+                        flex: 1,
+                        marginRight: 4,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.buttonText, { color: "#888780" }]}>
+                      Go Back
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.buttonWrapper, { flex: 1, marginLeft: 4 }]}
+                  >
+                    <Text style={styles.buttonText}>Confirm</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </Pressable>
+          </Pressable>
+        </BlurView>
+      </Modal>
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
+        mode="date"
+        date={new Date(currentDate)}
+        onConfirm={handleDateConfirm}
+        onCancel={() => setIsDatePickerVisible(false)}
+        minimumDate={new Date()}
+        maximumDate={addMonths(new Date(), 6)}
+      />
     </View>
   );
 }
@@ -207,5 +320,22 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#FFF",
     fontWeight: "600",
+  },
+  modalBlur: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(29, 158, 117, 0.3)",
+  },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  innerModal: {
+    backgroundColor: "white",
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
