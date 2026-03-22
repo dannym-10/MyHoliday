@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   StyleSheet,
   ActivityIndicator,
@@ -11,11 +11,14 @@ import {
 import { useBankHolidaysData } from "../../hooks/useBankHolidaysData";
 import { ListItem } from "@/components/ListItem/ListItem";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SwipeableMethods } from "react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable";
 
 export default function TabOneScreen() {
   const { top } = useSafeAreaInsets();
   const { data, isLoading, isError, refetch, isFetching } =
     useBankHolidaysData();
+
+  const currentlyOpenSwipeableRef = useRef<SwipeableMethods | null>(null);
 
   if (isLoading) {
     return (
@@ -63,7 +66,12 @@ export default function TabOneScreen() {
         data={data}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <ListItem date={item.date} title={item.title} id={item.id} />
+          <ListItem
+            date={item.date}
+            title={item.title}
+            id={item.id}
+            currentlyOpenSwipeableRef={currentlyOpenSwipeableRef}
+          />
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
