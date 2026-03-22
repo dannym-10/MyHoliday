@@ -3,17 +3,23 @@ import axios from "axios";
 import { addMonths, isAfter, isBefore, parseISO, startOfDay } from "date-fns";
 import { generateBankHolidayID } from "../utils/generateBankHolidayID";
 
-interface BankHoliday {
+interface BankHolidayItemResponse {
   title: string;
   date: string;
   notes: string;
   bunting: boolean;
 }
 
+export interface BankHolidayItem extends Pick<
+  BankHolidayItemResponse,
+  "title" | "date"
+> {
+  id: string;
+}
 interface BankHolidayResponse {
-  "england-and-wales": { events: BankHoliday[] };
-  scotland: { events: BankHoliday[] };
-  "northern-ireland": { events: BankHoliday[] };
+  "england-and-wales": { events: BankHolidayItemResponse[] };
+  scotland: { events: BankHolidayItemResponse[] };
+  "northern-ireland": { events: BankHolidayItemResponse[] };
 }
 
 const fetchBankHolidaysData = async (): Promise<BankHolidayResponse> => {
@@ -22,11 +28,11 @@ const fetchBankHolidaysData = async (): Promise<BankHolidayResponse> => {
 };
 
 export const useBankHolidaysData = () => {
-  return useQuery({
+  return useQuery<BankHolidayResponse, Error, BankHolidayItem[]>({
     queryFn: fetchBankHolidaysData,
     queryKey: ["BankHolidays"],
     select: (data) => {
-      const allData = [
+      const allData: BankHolidayItem[] = [
         ...data["england-and-wales"].events,
         ...data["scotland"].events,
         ...data["northern-ireland"].events,

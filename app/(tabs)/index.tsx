@@ -8,7 +8,10 @@ import {
   Text,
   View,
 } from "react-native";
-import { useBankHolidaysData } from "../../hooks/useBankHolidaysData";
+import {
+  BankHolidayItem,
+  useBankHolidaysData,
+} from "../../hooks/useBankHolidaysData";
 import { ListItem } from "@/components/ListItem/ListItem";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SwipeableMethods } from "react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable";
@@ -16,11 +19,19 @@ import Animated, {
   FadeInLeft,
   LinearTransition,
 } from "react-native-reanimated";
+import { useEditContext } from "@/context/EditContext";
 
 export default function TabOneScreen() {
   const { top } = useSafeAreaInsets();
   const { data, isLoading, isError, refetch, isFetching } =
     useBankHolidaysData();
+  const { editedItems } = useEditContext();
+
+  const mergedData: BankHolidayItem[] =
+    data?.map((item) => ({
+      ...item,
+      ...(editedItems[item.id] || {}),
+    })) || [];
 
   const currentlyOpenSwipeableRef = useRef<SwipeableMethods | null>(null);
 
@@ -67,7 +78,7 @@ export default function TabOneScreen() {
         </Text>
       </View>
       <FlatList
-        data={data}
+        data={mergedData}
         keyExtractor={(item) => item.id}
         renderItem={({ item, index }) => (
           <Animated.View

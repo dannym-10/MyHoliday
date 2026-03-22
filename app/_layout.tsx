@@ -11,6 +11,7 @@ import "react-native-reanimated";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useColorScheme } from "@/components/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { EditProvider } from "../context/EditContext";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -54,24 +55,26 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="holiday/[id]"
-              options={{
-                title: "Bank Holiday",
-                headerBackTitle: "Back",
-                headerShown: false,
-              }}
-            />
-          </Stack>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </GestureHandlerRootView>
+    <EditProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="holiday/[id]"
+                options={{
+                  title: "Bank Holiday",
+                  headerBackTitle: "Back",
+                  headerShown: false,
+                }}
+              />
+            </Stack>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </GestureHandlerRootView>
+    </EditProvider>
   );
 }
