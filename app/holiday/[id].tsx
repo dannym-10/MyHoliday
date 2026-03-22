@@ -1,11 +1,16 @@
 import { useLocalSearchParams } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { differenceInDays, format, formatDate } from "date-fns";
 import { useAddToCalendar } from "@/hooks/useAddToCalendar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronRight } from "@/assets/SVGs/ChevronRight";
 import { router } from "expo-router";
 import { useState } from "react";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 
 export default function HolidayDetailScreen() {
   const { id, title, date } = useLocalSearchParams<{
@@ -42,38 +47,63 @@ export default function HolidayDetailScreen() {
           </Pressable>
         )}
       </View>
-      <View style={styles.topWrapper}>
-        <Text style={styles.bankHolidayText}>BANK HOLIDAY</Text>
-        <Text style={styles.titleText}>{title}</Text>
-        <Text style={styles.dateText}>
-          {formatDate(date, "EEEE d MMMM yyyy")}
-        </Text>
-      </View>
-      <View style={styles.middleWrapper}>
-        <View>
-          <Text style={styles.middleHeading}>Days away</Text>
-          <Text style={styles.middleText}>
-            {daysUntil} {daysUntil === 1 ? "day" : "days"}
+      <Animated.View style={styles.topWrapper} layout={LinearTransition}>
+        {isEditMode ? (
+          <Animated.View key="main" entering={FadeIn} exiting={FadeOut}>
+            <Text style={styles.editLabel}>Title</Text>
+            <TextInput
+              style={styles.editInput}
+              value={currentTitle}
+              onChangeText={setCurrentTitle}
+              placeholder="Holiday title"
+              placeholderTextColor="rgba(255,255,255,0.4)"
+            />
+            <Text style={styles.editLabel}>Date</Text>
+            <TextInput
+              style={styles.editInput}
+              value={currentDate}
+              onChangeText={setCurrentDate}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor="rgba(255,255,255,0.4)"
+            />
+          </Animated.View>
+        ) : (
+          <Animated.View key="editing" entering={FadeIn} exiting={FadeOut}>
+            <Text style={styles.bankHolidayText}>BANK HOLIDAY</Text>
+            <Text style={styles.titleText}>{title}</Text>
+            <Text style={styles.dateText}>
+              {formatDate(date, "EEEE d MMMM yyyy")}
+            </Text>
+          </Animated.View>
+        )}
+      </Animated.View>
+      <Animated.View layout={LinearTransition}>
+        <View style={[styles.middleWrapper, isEditMode && { opacity: 0.4 }]}>
+          <View>
+            <Text style={styles.middleHeading}>Days away</Text>
+            <Text style={styles.middleText}>
+              {daysUntil} {daysUntil === 1 ? "day" : "days"}
+            </Text>
+          </View>
+          <View style={styles.spacer} />
+          <View>
+            <Text style={styles.middleHeading}>Falls on</Text>
+            <Text style={styles.middleText}>{format(date, "EEEE")}</Text>
+          </View>
+        </View>
+        <Pressable
+          style={styles.buttonWrapper}
+          onPress={() =>
+            isEditMode
+              ? console.log("saving changes")
+              : addToCalendar(title, date)
+          }
+        >
+          <Text style={styles.buttonText}>
+            {isEditMode ? "Save Changes" : "Add to Calendar"}
           </Text>
-        </View>
-        <View style={styles.spacer} />
-        <View>
-          <Text style={styles.middleHeading}>Falls on</Text>
-          <Text style={styles.middleText}>{format(date, "EEEE")}</Text>
-        </View>
-      </View>
-      <Pressable
-        style={styles.buttonWrapper}
-        onPress={() =>
-          isEditMode
-            ? console.log("saving changes")
-            : addToCalendar(title, date)
-        }
-      >
-        <Text style={styles.buttonText}>
-          {isEditMode ? "Save Changes" : "Add to Calendar"}
-        </Text>
-      </Pressable>
+        </Pressable>
+      </Animated.View>
     </View>
   );
 }
@@ -107,6 +137,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0F6E56",
     borderRadius: 14,
     marginBottom: 20,
+    minHeight: 140,
   },
   bankHolidayText: {
     fontSize: 14,
@@ -146,6 +177,23 @@ const styles = StyleSheet.create({
     height: 40,
     width: 1,
     backgroundColor: "#888780",
+  },
+  editLabel: {
+    fontSize: 14,
+    color: "#9FE1CB",
+    textTransform: "uppercase",
+    marginBottom: 6,
+  },
+  editInput: {
+    backgroundColor: "#F0FBF7",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
+    padding: 10,
+    color: "#2C2C2A",
+    fontSize: 18,
+    fontWeight: "500",
+    marginBottom: 14,
   },
   buttonWrapper: {
     marginTop: 20,
