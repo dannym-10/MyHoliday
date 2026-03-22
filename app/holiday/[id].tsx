@@ -34,6 +34,7 @@ export default function HolidayDetailScreen() {
   const [isConfirmationModalVisible, setIsConfirmationModalVisible] =
     useState<boolean>(false);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [isTitleError, setIsTitleError] = useState<boolean>(false);
 
   const daysUntil = differenceInDays(new Date(currentDate), new Date());
 
@@ -43,6 +44,13 @@ export default function HolidayDetailScreen() {
   };
 
   const handleUpdateItem = () => {
+    if (stagedTitle.trim().length === 0) {
+      setIsTitleError(true);
+      setIsConfirmationModalVisible(false);
+      return;
+    }
+
+    setIsTitleError(false);
     setCurrentTitle(stagedTitle);
     setCurrentDate(stagedDate);
 
@@ -78,7 +86,12 @@ export default function HolidayDetailScreen() {
             <Text style={styles.cancelButton}>Cancel</Text>
           </Pressable>
         ) : (
-          <Pressable onPress={() => setIsEditMode(true)}>
+          <Pressable
+            onPress={() => {
+              setIsEditMode(true);
+              setIsTitleError(false);
+            }}
+          >
             <Text style={styles.greenText}>Edit details</Text>
           </Pressable>
         )}
@@ -88,12 +101,25 @@ export default function HolidayDetailScreen() {
           <Animated.View key="main" entering={FadeIn} exiting={FadeOut}>
             <Text style={styles.editLabel}>Title</Text>
             <TextInput
-              style={styles.editInput}
+              style={[
+                styles.editInput,
+                isTitleError && {
+                  borderColor: "#E24B4A",
+                  borderWidth: 3,
+                  backgroundColor: "#fde3e3",
+                },
+              ]}
               value={stagedTitle}
-              onChangeText={setStagedTitle}
+              onChangeText={(text) => {
+                setStagedTitle(text);
+                if (isTitleError) setIsTitleError(false);
+              }}
               placeholder="Holiday title"
-              placeholderTextColor="rgba(255,255,255,0.4)"
+              placeholderTextColor="#2C2C2A"
             />
+            {isTitleError && (
+              <Text style={styles.errorText}>Title must not be blank</Text>
+            )}
             <Text style={styles.editLabel}>Date</Text>
             <Pressable onPress={() => setIsDatePickerVisible(true)}>
               <View pointerEvents="none">
@@ -259,5 +285,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#FFF",
     fontWeight: "600",
+  },
+  errorText: {
+    color: "#eb5353",
+    fontWeight: "600",
+    marginBottom: 8,
+    marginTop: -8,
+    fontSize: 18,
   },
 });
