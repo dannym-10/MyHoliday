@@ -138,6 +138,8 @@ export default function HolidayDetailScreen() {
             <Text style={styles.dateText}>
               {formatDate(currentDate, "EEEE d MMMM yyyy")}
             </Text>
+            <View style={styles.circle1} />
+            <View style={styles.circle2} />
           </Animated.View>
         )}
       </Animated.View>
@@ -292,5 +294,23 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: -8,
     fontSize: 18,
+  },
+  circle1: {
+    position: "absolute",
+    height: 100,
+    width: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    right: 0,
+    bottom: -60,
+  },
+  circle2: {
+    position: "absolute",
+    height: 80,
+    width: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    right: -30,
+    bottom: 60,
   },
 });
