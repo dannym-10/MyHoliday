@@ -77,8 +77,10 @@ export const ListItem: React.FC<ListItemProps> = ({
               <Text style={styles.day}>{formattedDay}</Text>
               <Text style={styles.month}>{formattedMonth}</Text>
             </View>
-            <View>
-              <Text style={styles.title}>{title}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+                {title}
+              </Text>
               <Text style={styles.daysUntil}>
                 In {daysUntil} {daysUntil === 1 ? "day" : "days"}
               </Text>
@@ -111,6 +113,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
   },
   rightSide: {
     justifyContent: "center",
