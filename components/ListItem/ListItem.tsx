@@ -6,7 +6,7 @@ import { ChevronRight } from "@/assets/SVGs/ChevronRight";
 import ReanimatedSwipeable, {
   SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
-import { TrashIcon } from "@/assets/SVGs/BinIcon";
+import { EditIcon } from "@/assets/SVGs/EditIcon";
 
 interface ListItemProps {
   title: string;
@@ -44,7 +44,7 @@ export const ListItem: React.FC<ListItemProps> = ({
       <Pressable
         onPress={() => handlePress(true)}
         style={{
-          backgroundColor: "red",
+          backgroundColor: "#efa905",
           alignItems: "center",
           justifyContent: "center",
           paddingHorizontal: 4,
@@ -53,7 +53,7 @@ export const ListItem: React.FC<ListItemProps> = ({
           borderBottomRightRadius: 16,
         }}
       >
-        <TrashIcon height={30} width={30} color="white" />
+        <EditIcon height={30} width={30} color="white" />
       </Pressable>
     );
   };
