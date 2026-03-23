@@ -7,6 +7,7 @@ import {
 } from "@/mockData/generateMockBankHolidayData";
 import { renderHook, waitFor } from "@testing-library/react-native";
 import { addMonths, isAfter, isBefore, parseISO, startOfDay } from "date-fns";
+import { faker } from "@faker-js/faker";
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -94,5 +95,43 @@ describe("useBankHolidaysData", () => {
     });
 
     expect(result.current.error).toBeInstanceOf(Error);
+  });
+
+  test("handles empty state when all data is in the past or post 6 months", async () => {
+    mockedAxios.get.mockResolvedValueOnce({
+      data: {
+        "england-and-wales": {
+          events: [
+            {
+              title: "past event",
+              date: "2020-01-01",
+              bunting: false,
+              notes: "",
+            },
+          ],
+        },
+        scotland: {
+          events: [
+            {
+              title: "future event",
+              date: "2030-01-01",
+              bunting: false,
+              notes: "",
+            },
+          ],
+        },
+        "northern-ireland": { events: [] },
+      },
+    });
+
+    const { result } = renderHook(() => useBankHolidaysData(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(result.current.data).toEqual([]);
   });
 });
