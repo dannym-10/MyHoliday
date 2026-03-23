@@ -3,7 +3,7 @@ import axios from "axios";
 import { addMonths, isAfter, isBefore, parseISO, startOfDay } from "date-fns";
 import { generateBankHolidayID } from "../utils/generateBankHolidayID";
 
-interface BankHolidayItemResponse {
+export interface BankHolidayItemResponse {
   title: string;
   date: string;
   notes: string;
@@ -16,7 +16,8 @@ export interface BankHolidayItem extends Pick<
 > {
   id: string;
 }
-interface BankHolidayResponse {
+
+export interface BankHolidayResponse {
   "england-and-wales": { events: BankHolidayItemResponse[] };
   scotland: { events: BankHolidayItemResponse[] };
   "northern-ireland": { events: BankHolidayItemResponse[] };
