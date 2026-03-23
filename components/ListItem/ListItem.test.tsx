@@ -1,3 +1,8 @@
+jest.mock("react-native-gesture-handler/ReanimatedSwipeable", () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react-native";
 import { ListItem } from "./ListItem";
@@ -14,6 +19,7 @@ const mockProps = {
   title: "Good Friday",
   date: "2028-04-18",
   id: "good-friday-2025-04-18",
+  currentlyOpenSwipeableRef: { current: null },
 };
 
 describe("ListItem", () => {
@@ -44,6 +50,7 @@ describe("ListItem", () => {
         id: mockProps.id,
         title: mockProps.title,
         date: mockProps.date,
+        isInEditMode: "false",
       },
     });
   });
